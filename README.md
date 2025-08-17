@@ -200,7 +200,7 @@ Certain choices can be made to increase performance, although most of them might
 the cost of inference speed. If enough resources are available, some promising options
 might be:
 
-1. Bigger patch size if resources are available
+1. Bigger patch size
 2. Bigger model size
 3. Pretrained Transformer-based model
 4. Ensembles
