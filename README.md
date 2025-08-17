@@ -6,9 +6,10 @@
 ## Description
 A project developed for the segmentation task of the [MICCAI 2022 challenge SAR-RARP50](https://www.synapse.org/Synapse:syn27618412/wiki/616881)
 [\[1\]](#ref-1). The task involves the segmentation 
-of surgical tools from RGB frames of surgery videos. With this project we can 
+of surgical tools from RGB frames of surgery videos. With this project we can easily 
 train a deep learning-based segmentation model to tackle the segmentation task 
-of the challenge, or potentially other tasks. Any segmentation model from 
+of the challenge, or potentially other similar segmentation tasks. 
+Any model from 
 [pytorch segmentation models](https://github.com/qubvel-org/segmentation_models.pytorch) 
 can be chosen.
 
