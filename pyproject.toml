@@ -5,7 +5,7 @@ description = "Surgical tool segmentation."
 authors = [{ name = "Vangelis Kostoulas", email = "vageliskos93@gmail.com" }]
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.11"
+requires-python = ">=3.10.8"
 dependencies = [
     "nnunetv2",
     "monai",
