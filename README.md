@@ -3,8 +3,6 @@
 ![](images/epoch_140_mbn3_val.png)
 
 
-------------
-
 ## Description
 A project developed for the segmentation task of the [MICCAI 2022 challenge SAR-RARP50](https://www.synapse.org/Synapse:syn27618412/wiki/616881)
 [\[1\]](#ref-1). The task involves the segmentation 
@@ -14,7 +12,6 @@ of the challenge, or potentially other tasks. Any segmentation model from
 [pytorch segmentation models](https://github.com/qubvel-org/segmentation_models.pytorch) 
 can be chosen.
 
-------------
 
 ## Installation
 
@@ -24,11 +21,9 @@ To install and use this project you can follow these steps:
 3. Install the right [pytorch](https://pytorch.org/) version for your system
 4. Run pip install . or pip install -e . for development
 
-------------
 
 ## Usage Instructions
 
-------------
 
 ### Get the dataset
 
@@ -44,7 +39,6 @@ https://rdr.ucl.ac.uk/articles/dataset/SAR-RARP50_test_set/24932499
 The training dataset is a zip folder (25.1 GB) that contains 50 videos with annotations,
 while the test dataset contains 10 samples (6.15 GB)
 
-------------
 
 ### Create Training/Inference Dataset
 
@@ -74,7 +68,6 @@ for efficient storage and retrival, using chunking, with chunk size the size of
 one model input patch. The dataset contains 9 classes, and we will use a chunk 
 size of [512, 640]. The video frames will be normalized in [0, 1] range.
 
-------------
 
 ### Training
 
@@ -129,7 +122,6 @@ batch size of 12 and a mobilenet-v2 encoder.
 
 You can continue training a model by passing -c in the training command.
 
-------------
 
 ### Inference
 
@@ -157,7 +149,6 @@ stseg_infer /home/WildCapybara/projects/datasets/STSeg_Test /home/WildCapybara/p
 
 In the example we change the default batch size used in the sliding window step to 16.
 
-------------
 
 ## Full Example for MICCAI Challenge
 
