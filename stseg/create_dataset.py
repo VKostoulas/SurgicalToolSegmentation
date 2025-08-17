@@ -1,4 +1,5 @@
 import os
+import ast
 import io
 import cv2
 import zarr
@@ -8,7 +9,7 @@ import tempfile
 import numpy as np
 from PIL import Image
 from zarr.codecs import BloscCodec, BloscShuffle
-from stseg.utils import parse_list_arg, clean_numpy_scalars, get_default_config
+from stseg.utils import clean_numpy_scalars
 
 
 def main():
@@ -16,7 +17,7 @@ def main():
     parser.add_argument("zip_dataset_path", type=str, help="Path to dataset zip.")
     parser.add_argument("save_dataset_path", type=str, help="Path of folder where dataset will be saved.")
     parser.add_argument("n_classes", type=int, help="Number of classes.")
-    parser.add_argument("patch_size", type=parse_list_arg, help="Patch size in format [W, H]")
+    parser.add_argument("patch_size", type=ast.literal_eval, help="Patch size in format [W, H]")
 
     args = parser.parse_args()
     dataset_zip_path = args.zip_dataset_path

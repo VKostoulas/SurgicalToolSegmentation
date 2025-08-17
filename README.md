@@ -1,4 +1,4 @@
-# Segmenation of Surgical Tools
+# Segmentation of Surgical Tools
 
 ![](images/epoch_140_mbn3_val.png)
 
@@ -19,7 +19,13 @@ To install and use this project you can follow these steps:
 1. Clone the repository
 2. Create your virtual environment
 3. Install the right [pytorch](https://pytorch.org/) version for your system
-4. Run pip install . or pip install -e . for development
+4. Run:
+
+```bash
+pip install .
+# or for development
+pip install -e .
+```
 
 
 ## Usage Instructions
@@ -64,8 +70,8 @@ The above command will create a new dataset at
 /home/WildCapybara/projects/datasets/STSeg based on the initial dataset stored 
 in /home/WildCapybara/projects/24932529.zip. The video frames and the 
 corresponding segmentation masks for each case will be stored in a [.zarr file](https://zarr.readthedocs.io/en/stable/)
-for efficient storage and retrival, using chunking, with chunk size the size of 
-one model input patch. The dataset contains 9 classes, and we will use a chunk 
+for efficient storage and retrieval, using chunking, with chunk size equal to 
+the model’s input patch size. The dataset contains 9 classes, and we will use a chunk 
 size of [512, 640]. The video frames will be normalized in [0, 1] range.
 
 
@@ -79,7 +85,7 @@ project, the default percentage of patches having a random class is 33%. nnU-Net
 augmentations are also used on-the-fly while training such as, random flips, 
 rotations, scaling, intensity augmentations, etc.
 
-Bellow is the basic command to run training with the project:
+Below is the basic command to run training with the project:
 
 ```bash
 stseg_train_model /dataset_path /results_path splitting n_classes patch_size --fold --progress_bar --continue_training
@@ -89,14 +95,16 @@ stseg_train_model /dataset_path /results_path splitting n_classes patch_size --f
 - */results_path* is the path to store results.
 - *splitting* indicates the mode of data splitting, and it can be either 
 *'train-val-test'* or *'5fold'*. With 'train-val-test' splitting, the dataset will be
-split into 70% training data, 10% validation and 20% test data.
+split into 70% training data, 10% validation and 20% test data. When you run training 
+for the first time on a dataset, a .json file will be created in the dataset path,
+containing the ids of the data sections.
 - *n_classes* is the number of the classes in the dataset.
 - *patch_size* is the training patch size.
-- *fold* is the index of fold in 5fold traininig.
-- *progress_bar* indicates whether we want to use tqdm progress bars.
-- *continue_training* indicates whether we are continuing a training experiment.
+- *fold* (optional) is the index of fold in 5fold training.
+- *progress_bar* (optional) indicates whether we want to use tqdm progress bars.
+- *continue_training* (optional) indicates whether we are continuing a training experiment.
 
-Inside the results folder, there will be stored:
+The results folder will contain:
 
 - A *config.yaml* file that contains all hyperparameters of the experiment
 - A *loss_dict.pkl* to store loss values of every training epoch
@@ -132,9 +140,9 @@ stseg_infer /dataset_path /results_path n_classes patch_size
 ```
 
 Obviously you should have already trained a model to run this command, and have a 
-results folder created with this project. Nothing will be currently stored or change
-when you run the inference command. You run the model on the given data, and you get
-metrics printed (inference time, fps and IOU scores).
+results folder created with this project. Nothing will be stored or changed when 
+you run the inference command. You run the model on the given data, and you get
+metrics printed (inference time, fps and IoU scores).
 
 For inference, a sliding window approach is adopted, using the implementation from 
 [MONAI](https://docs.monai.io/en/stable/inferers.html#sliding-window-inference-function).
@@ -149,12 +157,16 @@ stseg_infer /home/WildCapybara/projects/datasets/STSeg_Test /home/WildCapybara/p
 
 In the example we change the default batch size used in the sliding window step to 16.
 
+If you trained a model with this project, and you used the 'train-val-test' splitting,
+you can infer on the test partition by using as /dataset_path the path of the training
+dataset.
+
 
 ## Full Example for MICCAI Challenge
 
-With the default configuration (based on U-Net++ and MobileNetV3), by running 
-the following commands we can achieve performance that gets as to the challenge 
-leaderboard:
+With the default configuration (based on U-Net++ and MobileNetV3) and sliding window
+overlap 0.75, by running the following commands we can achieve performance comparable 
+to the challenge leaderboard:
 
 ```bash
 # Create training dataset
@@ -164,7 +176,7 @@ stseg_train_model /home/WildCapybara/projects/datasets/STSeg /home/WildCapybara/
 # Create test dataset
 stseg_create_dataset /home/WildCapybara/projects/24932499.zip /home/WildCapybara/projects/datasets/STSeg_Test 9 [512,640]
 # Run inference on the test dataset
-stseg_infer /home/WildCapybara/projects/datasets/STSeg_Test /home/WildCapybara/projects/results/exp1 9 [512,640] 
+stseg_infer /home/WildCapybara/projects/datasets/STSeg_Test /home/WildCapybara/projects/results/exp1 9 [512,640] --sw_overlap 0.75 
 ```
 
 This experiment was done on a laptop with an NVIDIA GeForce RTX 3060 Laptop GPU with 
@@ -183,6 +195,10 @@ were used for training and 4 for validation. The original test set of 10 samples
 
 
 ## How to Increase Performance
+
+Certain choices can be made to increase performance, although most of them might come at 
+the cost of inference speed. If enough resources are available, some promising options
+might be:
 
 1. Bigger patch size if resources are available
 2. Bigger model size
@@ -204,12 +220,12 @@ robot-assisted radical prostatectomy challenge. arXiv preprint arXiv:2401.00496.
 Maier-Hein, K.H., 2021. nnU-Net: a self-configuring method for deep learning-based 
 biomedical image segmentation. Nature methods, 18(2), pp.203-211. ([link](https://www.nature.com/articles/s41592-020-01008-z))
 
-
 <a id="ref-3"></a> [3] Zhou, Z., Rahman Siddiquee, M.M., Tajbakhsh, N. and Liang, J.,
 2018, September. Unet++: A nested u-net architecture for medical image segmentation. 
 In International workshop on deep learning in medical image analysis (pp. 3-11). 
 Cham: Springer International Publishing. ([link](https://pmc.ncbi.nlm.nih.gov/articles/PMC7329239/pdf/nihms-1600717.pdf))
 
-
-
-<a id="ref-3"></a> [4] Howard, A., Sandler, M., Chu, G., Chen, L.C., Chen, B., Tan, M., Wang, W., Zhu, Y., Pang, R., Vasudevan, V. and Le, Q.V., 2019. Searching for mobilenetv3. In Proceedings of the IEEE/CVF international conference on computer vision (pp. 1314-1324). ([link](https://arxiv.org/abs/1905.02244))
+<a id="ref-4"></a> [4] Howard, A., Sandler, M., Chu, G., Chen, L.C., Chen, B., Tan, M., 
+Wang, W., Zhu, Y., Pang, R., Vasudevan, V. and Le, Q.V., 2019. Searching for mobilenetv3.
+In Proceedings of the IEEE/CVF international conference on computer vision 
+(pp. 1314-1324). ([link](https://arxiv.org/abs/1905.02244))

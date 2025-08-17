@@ -10,7 +10,7 @@ def save_losses(loss_dict, save_path, log_scale=False):
     os.makedirs(save_path, exist_ok=True)
     save_plot_path = os.path.join(save_path, f"loss.png")
 
-    epochs = range(1, len(loss_dict['train_loss']) + 1)  # Epoch indices
+    epochs = range(1, len(loss_dict['train_loss']) + 1)
 
     mapping_names_dict = {'train_loss': 'Train DiceCELoss', 'val_loss': 'Val DiceCELoss'}
 

@@ -64,7 +64,6 @@ def create_split_files(dataset_path, splitting, seed=12345):
     else:
         raise ValueError("Invalid splitting option. Choose 'train-val-test' or '5-fold'.")
 
-    # Save the split dictionary as a pickle file
     with open(split_file_path, 'w') as f:
         json.dump(split_data, f, indent=4)
 
@@ -373,6 +372,7 @@ class SegTrainingDataset(Dataset):
         """ Uses a probability threshold to oversample foreground patches. """
         return np.random.uniform() < self.oversample_foreground_percent
 
+    # from nnunet adapted
     def get_bbox(self, data_shape, force_fg, class_locations):
         """
         Computes a bounding box (lower and upper) for patch cropping.
@@ -531,7 +531,7 @@ class SegTestDataset(Dataset):
         self._index = []  # (vid_idx, t0, t1)
         for vid_idx, name in enumerate(self.ids):
             zg = zarr.open_group(os.path.join(self.data_path, name + '.zarr'), mode='r')
-            tlen = zg['image'].shape[1]  # time is axis 1 in your data
+            tlen = zg['image'].shape[1]  # time is axis 1
             self.video_lengths.append(tlen)
             t = 0
             while t < tlen:

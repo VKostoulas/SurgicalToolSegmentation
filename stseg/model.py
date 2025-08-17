@@ -355,6 +355,6 @@ class SegModel:
         for i, score in enumerate(total_mean_per_class):
             parts.append(f"C{i+1}: {score.numpy() * 100:.2f}")
         parts.append(f"AVG: {total_mean_per_class.mean().numpy() * 100:.2f}")
-        print("    IOU scores per class: ")
-        print("        " + " - ".join(parts))
+        print("IOU scores per class: ")
+        print("    " + " - ".join(parts))
 
