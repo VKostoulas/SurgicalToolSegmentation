@@ -1,0 +1,18 @@
+# ignore everything
+*
+
+# except
+!.gitignore
+!README.md
+!pyproject.toml
+
+# ignore everything in stseg
+stseg/*
+
+# except the folder itself
+!stseg/
+# and the .py files
+!stseg/*.py
+
+!images/
+!images/*.png

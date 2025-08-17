@@ -1,0 +1,34 @@
+[project]
+name = "stseg"
+version = "0.1.0"
+description = "Surgical tool segmentation."
+authors = [{ name = "Vangelis Kostoulas", email = "vageliskos93@gmail.com" }]
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = [
+    "nnunetv2",
+    "monai",
+    "torchinfo",
+    "zarr",
+    "opencv-python",
+    "segmentation-models-pytorch",
+    "jupyter",
+    "matplotlib",
+    "ipywidgets",
+    "ipympl",
+    "notebook",
+    "tornado"
+]
+
+[project.scripts]
+stseg_create_dataset = "stseg.create_dataset:main"
+stseg_train_model = "stseg.training:main"
+stseg_infer = "stseg.inference:main"
+
+[build-system]
+requires = ["setuptools>=68.2.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["stseg"]
