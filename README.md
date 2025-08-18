@@ -16,17 +16,21 @@ can be chosen.
 
 ## Installation
 
-To install and use this project you can follow these steps:
-1. Clone the repository
-2. Create your virtual environment
-3. Install the right [pytorch](https://pytorch.org/) version for your system
-4. Run:
+- python version >= 3.10.8 is required
 
-```bash
-pip install .
-# or for development
-pip install -e .
-```
+- To install and use this project you can follow these steps:
+  1. Clone the repository
+  2. Create your virtual environment
+  3. Install the right [pytorch](https://pytorch.org/) version for your system smaller
+  than 2.7. Tested
+  with torch 2.5.1 and 2.6, with cuda 12.4 and 11.8, respectively.
+  4. Run:
+
+    ```bash
+    pip install .
+    # or for development
+    pip install -e .
+    ```
 
 
 ## Usage Instructions
