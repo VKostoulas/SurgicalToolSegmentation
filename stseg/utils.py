@@ -106,10 +106,21 @@ def add_user_config_args(config, config_args):
     return config
 
 
+def safe_eval(s: str):
+    # handle common literals
+    m = {'true': True, 'false': False, 'none': None, 'null': None}
+    if (l := s.lower()) in m:
+        return m[l]
+    try:
+        return ast.literal_eval(s)  # numbers, lists, dicts, quoted strings
+    except Exception:
+        return s  # fallback: keep as plain string
+
+
 def check_and_convert_user_config_args(args, mode):
 
     args = [a.lstrip("-") for a in args]  # strip leading "-" or "--"
-    args = {args[i]: ast.literal_eval(args[i + 1]) for i in range(0, len(args), 2)}
+    args = {args[i]: safe_eval(args[i + 1]) for i in range(0, len(args), 2)}
 
     if args:
         allowed_training_args = ["transformations_scaling", "transformations_rotation", "transformations_gaussian_noise",
