@@ -26,7 +26,7 @@ def write_sample(cap, mask_idx2name, n_classes, patch_size, compressor, file_sav
     image_chunks = (3, 1, *patch_size)
     mask_chunks  = (1, *patch_size)
 
-    z_file = zarr.open(file_save_path, mode='w')
+    z_file = zarr.open_group(file_save_path, mode='w')
     n = len(mask_idx2name)
     img_ar = z_file.create_array(name='image', shape=(3, n, h, w), chunks=image_chunks,
                                  dtype=np.float32, compressors=compressor, overwrite=True)
