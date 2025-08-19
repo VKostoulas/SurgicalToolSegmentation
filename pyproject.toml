@@ -11,7 +11,7 @@ dependencies = [
     "nnunetv2",
     "monai",
     "torchinfo",
-    "zarr",
+    "zarr>=3.0.0a0",
     "opencv-python",
     "segmentation-models-pytorch",
     "jupyter",

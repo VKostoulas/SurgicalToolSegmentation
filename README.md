@@ -47,17 +47,17 @@ and the test dataset from:
 
 https://rdr.ucl.ac.uk/articles/dataset/SAR-RARP50_test_set/24932499
 
-The training dataset is a zip folder (25.1 GB) that contains 50 videos with annotations,
-while the test dataset contains 10 samples (6.15 GB)
+The training dataset is a zip folder (25.1 GB) that contains 45 videos, while the test 
+dataset contains 10 videos (6.15 GB), all of them with annotations for 9 classes.
 
 
 ### Create Training/Inference Dataset
 
-The initial dataset should be a zip folder that contains zip files per case. 
-Every zip file should contain a video as .avi file and a folder called 
-'segmentations' with PNG images corresponding to all available segmentation 
-masks of frames of the video. The names of the PNG masks should be the exact 
-indexes of the corresponding video frames. 
+The initial dataset should be a zip folder that contains either a folder for each sample,
+or zip files, each one containing a folder for each sample. Every zip file/folder should 
+contain a video as .avi file, and a folder called 'segmentation' with PNG images 
+corresponding to all available segmentation masks of frames of the video. The names 
+of the PNG masks should be the exact indexes of the corresponding video frames. 
 
 Run the following command to convert the initial dataset to a dataset ready 
 for training/inference:
