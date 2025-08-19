@@ -5,13 +5,13 @@ description = "Surgical tool segmentation."
 authors = [{ name = "Vangelis Kostoulas", email = "vageliskos93@gmail.com" }]
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.10.8"
+requires-python = ">=3.11"
 dependencies = [
     "torch<2.7",
     "nnunetv2",
     "monai",
     "torchinfo",
-    "zarr>=3.0.0a0",
+    "zarr==3.1.1",
     "opencv-python",
     "segmentation-models-pytorch",
     "jupyter",
