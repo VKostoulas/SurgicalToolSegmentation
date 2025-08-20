@@ -47,7 +47,8 @@ and the test dataset from:
 https://rdr.ucl.ac.uk/articles/dataset/SAR-RARP50_test_set/24932499
 
 The training dataset is a zip folder (25.1 GB) that contains 45 videos, while the test 
-dataset contains 10 videos (6.15 GB), all of them with annotations for 9 classes.
+dataset contains 10 videos (6.15 GB), all of them with annotations for 9 classes. The 
+frame resolution is 1080$\times$1920.
 
 
 ### Create Training/Inference Dataset
@@ -199,7 +200,8 @@ were used for training and 4 for validation. The original test set of 10 samples
 
 ![](images/leaderboard.png)
 
-
+**Full resolution example**:
+![](images/data_002_18-24.png)
 
 ## How to Increase Performance
 
