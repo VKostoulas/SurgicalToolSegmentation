@@ -1,5 +1,7 @@
 import os
+import re
 import sys
+import random
 import time
 import torch
 import pickle
@@ -11,7 +13,7 @@ from monai.losses import DiceCELoss
 from monai.inferers import sliding_window_inference
 from torch.amp import GradScaler, autocast
 from segmentation_models_pytorch.metrics import get_stats, iou_score
-from stseg.utils import save_losses
+from stseg.utils import save_losses, create_config
 
 
 # class CUDAPrefetcher:
@@ -209,11 +211,12 @@ class SegModel:
         if for_training:
             return checkpoint['epoch'] + 1
 
-    def save_plots(self, images, masks, predictions, save_path):
+    def save_plots(self, images, masks, predictions, save_path, one_hot=True):
         to_np = lambda x: x.detach().cpu().numpy()
         images, masks, preds = map(to_np, (images, masks, predictions))
-        masks = masks.argmax(1)
-        preds = preds.argmax(1)
+        if one_hot:
+            masks = masks.argmax(1)
+            preds = preds.argmax(1)
         rows = min(4, images.shape[0])
         n_classes = self.config['n_classes']
 
@@ -280,8 +283,15 @@ class SegModel:
         self.model.to(memory_format=torch.channels_last)
         self.model.half()
         all_iou_list = []
-        start = time.time()
+
+        base_results_path = self.config['results_path']
+        prefix = "test_plots_"
+        existing = [int(re.search(rf"{prefix}(\d+)", d).group(1))
+                    for d in os.listdir(base_results_path) if d.startswith(prefix) and re.search(rf"{prefix}(\d+)", d)]
+        plot_folder_path = os.path.join(base_results_path, f"{prefix}{max(existing, default=0) + 1}")
+        create_config(self.config, plot_folder_path)
         print('')
+        start = time.time()
 
         seen = set()
         with torch.inference_mode():
@@ -295,62 +305,65 @@ class SegModel:
 
                     if len(seen) > 0:
                         video_end = time.time() - video_start
+                        print(f"    Inference time: {time.strftime('%H:%M:%S', time.gmtime(video_end))} ({num_frames / video_end:.2f} fps)")
                         video_iou_tensor = torch.cat(current_iou_list, dim=0)
                         mean_per_class = video_iou_tensor.mean(dim=0)
                         all_iou_list.append(video_iou_tensor)
-                        print(f"    Inference time: {time.strftime('%H:%M:%S', time.gmtime(video_end))} ({num_frames/video_end:.2f} fps)")
                         parts = []
                         for i, score in enumerate(mean_per_class):
                             parts.append(f"C{i+1}: {score.numpy() * 100:.2f}")
                         parts.append(f"AVG: {mean_per_class.mean().numpy() * 100:.2f}")
                         print("    IOU scores per class: ")
                         print("        " + " - ".join(parts))
-
+                        self.save_plots(*plot_item, one_hot=False)
 
                     # if len(seen) == 1:
                     #     break
 
-                    video_start = time.time()
                     current_iou_list = []
                     seen.add(name)
                     vid_idx = test_loader.dataset.ids.index(name)
                     num_frames = test_loader.dataset.video_lengths[vid_idx]
                     print(f"Running inference for: {name}")
                     print(f"    Number of frames: {num_frames}")
+                    # randomly select a batch to plot per case
+                    plot_batch_t0 = random.choice([t[1] for t in test_loader.dataset._index if t[0] == vid_idx])
+                    plot_item = ()
+                    video_start = time.time()
 
                 with autocast(self.device.type):
                     preds = sliding_window_inference(frames, roi_size=self.config['transformations']['patch_size'],
                                                      sw_batch_size=self.config['sw_batch_size'], predictor=self.model, overlap=self.config['sw_overlap'],
                                                      sw_device=self.device, device=self.device)
-
-                tp, fp, fn, tn = get_stats(preds.argmax(1)-1, masks-1, mode='multiclass',
+                preds = preds.argmax(1)
+                tp, fp, fn, tn = get_stats(preds-1, masks-1, mode='multiclass',
                                            num_classes=self.config['n_classes'], ignore_index=-1)
                 score = iou_score(tp, fp, fn, tn)
                 current_iou_list.append(score)
 
-                # plot_path = os.path.join(self.config['results_path'], 'test_plots', f"frames_{data_item['t0']}-{data_item['t1']}.png")
-                # if not os.path.exists(os.path.join(self.config['results_path'], 'test_plots')):
-                #     os.makedirs(os.path.join(self.config['results_path'], 'test_plots'))
-                # self.save_plots(v, masks, preds, save_path=plot_path)
+                if data_item['t0'] == plot_batch_t0:
+                    plot_path = os.path.join(plot_folder_path, f"{name}_{data_item['t0']}-{data_item['t1']}.png")
+                    plot_item = (frames.float(), masks.long(), preds.long(), plot_path)
 
             # save results for the last video
             video_end = time.time() - video_start
+            print(f"    Inference time: {time.strftime('%H:%M:%S', time.gmtime(video_end))} ({num_frames / video_end:.2f} fps)")
             video_iou_tensor = torch.cat(current_iou_list, dim=0)
             mean_per_class = video_iou_tensor.mean(dim=0)
             all_iou_list.append(video_iou_tensor)
-            print(f"    Inference time: {time.strftime('%H:%M:%S', time.gmtime(video_end))} ({num_frames/video_end:.2f} fps)")
             parts = []
             for i, score in enumerate(mean_per_class):
                 parts.append(f"C{i+1}: {score.numpy() * 100:.2f}")
             parts.append(f"AVG: {mean_per_class.mean().numpy() * 100:.2f}")
             print("    IOU scores per class: ")
             print("        " + " - ".join(parts))
+            self.save_plots(*plot_item, one_hot=False)
 
         all_iou_tensors = torch.cat(all_iou_list, dim=0)
         total_mean_per_class = all_iou_tensors.mean(dim=0)
 
         total = time.time() - start
-        print(f"\nTotal inference time: {time.strftime('%H:%M:%S', time.gmtime(total))} ({num_frames/video_end:.2f} fps)")
+        print(f"\nTotal inference time: {time.strftime('%H:%M:%S', time.gmtime(total))}")
         parts = []
         for i, score in enumerate(total_mean_per_class):
             parts.append(f"C{i+1}: {score.numpy() * 100:.2f}")

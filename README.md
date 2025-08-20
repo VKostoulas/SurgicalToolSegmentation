@@ -143,15 +143,18 @@ To run inference on a dataset use the following command:
 stseg_infer /dataset_path /results_path
 ```
 
-Obviously you should have already trained a model to run this command, and have a 
-results folder created with this project. Nothing will be stored or changed when 
-you run the inference command. You run the model on the given data, and you get
-metrics printed (inference time, fps and IoU scores).
-
 For inference, a sliding window approach is adopted, using the implementation from 
 [MONAI](https://docs.monai.io/en/stable/inferers.html#sliding-window-inference-function).
 The user can modify inference parameters in the configuration while 
 running the inference command.
+
+Obviously you should have already trained a model to run this command, and have a 
+results folder created with this project. Every time you run the inference command,
+a 'test_plots_i' folder will be created in your results folder, containing examples from
+a random batch of each test sample. The configuration you used will also be stored in the
+new folder, just in case you used different inference parameters than those stored when
+you trained a model, or on other inference runs. When you run the command, you also get 
+metrics printed per test case and averages (inference time, fps and IoU scores).
 
 Example for the MICCAI segmentation task:
 
