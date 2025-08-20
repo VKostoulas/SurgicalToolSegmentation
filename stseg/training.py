@@ -54,7 +54,8 @@ def main():
         continue_training = args.continue_training
 
         mode = 'continue_training' if continue_training else 'training'
-        config = get_config(dataset_path, results_path, n_classes, patch_size, config_args, progress_bar=progress_bar, mode=mode)
+        config = get_config(dataset_path, results_path, mode, config_args=config_args, n_classes=n_classes,
+                            patch_size=patch_size, progress_bar=progress_bar)
 
         train_loader, val_loader = get_data_loaders(config, splitting, fold)
 

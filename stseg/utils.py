@@ -103,6 +103,10 @@ def add_user_config_args(config, config_args):
             else:
                 for inner_key in config_args[key]:
                     config[key][inner_key] = config_args[key][inner_key]
+
+            if key == 'n_epochs' and 'total_iters' in config['lr_scheduler']:
+                config['lr_scheduler']['total_iters'] = config_args[key]
+
     return config
 
 
@@ -157,7 +161,7 @@ def check_and_convert_user_config_args(args, mode):
         return None
 
 
-def get_config(dataset_path, results_path, n_classes, patch_size, config_args=None, progress_bar=False, mode=None):
+def get_config(dataset_path, results_path, mode, config_args=None, n_classes=None, patch_size=None, progress_bar=False):
     config_path = os.path.join(results_path, 'config.yaml')
 
     if mode == 'training':

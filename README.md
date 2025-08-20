@@ -140,7 +140,7 @@ You can continue training a model by passing -c in the training command.
 To run inference on a dataset use the following command:
 
 ```bash
-stseg_infer /dataset_path /results_path n_classes patch_size
+stseg_infer /dataset_path /results_path
 ```
 
 Obviously you should have already trained a model to run this command, and have a 
@@ -150,13 +150,13 @@ metrics printed (inference time, fps and IoU scores).
 
 For inference, a sliding window approach is adopted, using the implementation from 
 [MONAI](https://docs.monai.io/en/stable/inferers.html#sliding-window-inference-function).
-In this project the user can modify inference parameters in the configuration while 
+The user can modify inference parameters in the configuration while 
 running the inference command.
 
 Example for the MICCAI segmentation task:
 
 ```bash
-stseg_infer /home/WildCapybara/projects/datasets/STSeg_Test /home/WildCapybara/projects/results/exp1 9 [512,640] --sw_batch_size 16
+stseg_infer /home/WildCapybara/projects/datasets/STSeg_Test /home/WildCapybara/projects/results/exp1 --sw_batch_size 16
 ```
 
 In the example we change the default batch size used in the sliding window step to 16.
@@ -180,7 +180,7 @@ stseg_train_model /home/WildCapybara/projects/datasets/STSeg /home/WildCapybara/
 # Create test dataset
 stseg_create_dataset /home/WildCapybara/projects/24932499.zip /home/WildCapybara/projects/datasets/STSeg_Test 9 [512,640]
 # Run inference on the test dataset
-stseg_infer /home/WildCapybara/projects/datasets/STSeg_Test /home/WildCapybara/projects/results/exp1 9 [512,640] --sw_overlap 0.75 
+stseg_infer /home/WildCapybara/projects/datasets/STSeg_Test /home/WildCapybara/projects/results/exp1 --sw_overlap 0.75 
 ```
 
 This experiment was done on a laptop with an NVIDIA GeForce RTX 3060 Laptop GPU with 

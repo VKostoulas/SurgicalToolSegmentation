@@ -14,8 +14,6 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Run inference on a data.")
     parser.add_argument("test_dataset_path", type=str, help="Path to the dataset we want to infer on.")
     parser.add_argument("results_path", type=str, help="Path to save results.")
-    parser.add_argument("n_classes", type=int, help="Number of classes.")
-    parser.add_argument("patch_size", type=ast.literal_eval, help="Patch size in format [W,H]")
 
     main_args, additional_args = parser.parse_known_args()
 
@@ -34,10 +32,8 @@ def main():
         args, config_args = parse_arguments()
         test_dataset_path = args.test_dataset_path
         results_path = args.results_path
-        n_classes = args.n_classes
-        patch_size = args.patch_size
 
-        config = get_config(test_dataset_path, results_path, n_classes, patch_size, config_args, mode='testing')
+        config = get_config(test_dataset_path, results_path, mode='testing', config_args=config_args)
 
         train_path = config['dataset_path']
         if train_path != test_dataset_path:
@@ -50,7 +46,7 @@ def main():
             split_file_path = create_split_files(test_dataset_path, 'train-val-test', seed=12345)
             data_ids = get_data_ids(split_file_path)['test']
 
-        test_ds = SegTestDataset(data_path=test_dataset_path, data_ids=data_ids, batch_size=config['infer_batch_size'],)
+        test_ds = SegTestDataset(data_path=test_dataset_path, data_ids=data_ids, batch_size=config['infer_batch_size'])
         test_loader = DataLoader(test_ds, batch_size=None, shuffle=False, num_workers=config['infer_num_workers'],
                                  pin_memory=True, persistent_workers=True, prefetch_factor=1)
 
