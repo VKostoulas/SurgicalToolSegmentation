@@ -154,6 +154,8 @@ class SegModel:
         self.loss_dict["val_loss"].append(epoch_loss)
 
         if return_img_mask_pred:
+            to_np = lambda x: x.detach().cpu().numpy()
+            images, masks, predictions = map(to_np, (images, masks, predictions))
             return images, masks, predictions
 
     def get_optimizer_and_lr_schedule(self):
@@ -211,9 +213,7 @@ class SegModel:
         if for_training:
             return checkpoint['epoch'] + 1
 
-    def save_plots(self, images, masks, predictions, save_path, one_hot=True):
-        to_np = lambda x: x.detach().cpu().numpy()
-        images, masks, preds = map(to_np, (images, masks, predictions))
+    def save_plots(self, images, masks, preds, save_path, one_hot=True):
         if one_hot:
             masks = masks.argmax(1)
             preds = preds.argmax(1)
@@ -258,16 +258,18 @@ class SegModel:
 
         for epoch in range(start_epoch, self.config['n_epochs'] + 1):
             self.train_one_epoch(epoch, train_loader, optimizer, scaler)
-            images, masks, predictions = self.validate_one_epoch(epoch, val_loader, return_img_mask_pred=True)
+            if epoch % self.config['val_plot_interval'] == 0:
+                images, masks, predictions = self.validate_one_epoch(epoch, val_loader, return_img_mask_pred=True)
+                self.save_plots(images, masks, predictions, save_path=os.path.join(self.config['results_path'], 'plots', f"epoch_{epoch}.png"))
+                del images, masks, predictions
+            else:
+                self.validate_one_epoch(epoch, val_loader)
             save_losses(self.loss_dict, plot_save_path)
             self.save_model(epoch, self.loss_dict['val_loss'][-1], optimizer, scheduler=lr_scheduler)
 
             loss_pickle_path = os.path.join(self.config['results_path'], 'loss_dict.pkl')
             with open(loss_pickle_path, 'wb') as file:
                 pickle.dump(self.loss_dict, file)
-
-            if epoch % self.config['val_plot_interval'] == 0:
-                self.save_plots(images, masks, predictions, save_path=os.path.join(self.config['results_path'], 'plots', f"epoch_{epoch}.png"))
 
             if lr_scheduler:
                 lr_scheduler.step()
@@ -345,7 +347,9 @@ class SegModel:
 
                 if data_item['t0'] == plot_batch_t0:
                     plot_path = os.path.join(plot_folder_path, f"{name}_{data_item['t0']}-{data_item['t1']}.png")
-                    plot_item = (frames.float(), masks.long(), preds.long(), plot_path)
+                    to_np = lambda x: x.detach().cpu().numpy()
+                    frames, masks, preds = map(to_np, (frames.float(), masks.long(), preds.long()))
+                    plot_item = (frames, masks, preds, plot_path)
 
             # save results for the last video
             video_end = time.time() - video_start
