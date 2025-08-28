@@ -225,6 +225,7 @@ class SegModel:
 
         for i in range(rows):
             img = images[i].transpose(1, 2, 0)
+            img = (img - img.min()) / (img.max() - img.min())
             axes[i, 0].imshow(img)
             axes[i, 0].axis('off')
             axes[i, 1].imshow(masks[i], cmap='hot', vmin=0, vmax=n_classes)
@@ -276,6 +277,7 @@ class SegModel:
         print(f"Total training time: {time.strftime('%H:%M:%S', time.gmtime(total_time))}")
 
     def run_inference(self, test_loader):
+        # TODO: currently, you might get slightly different results whenever you run this
         torch.backends.cudnn.benchmark = True  # faster convs for fixed sizes
         self.load_model(self.config['load_model_path'])
         self.model.eval()

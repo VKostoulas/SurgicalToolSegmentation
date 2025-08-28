@@ -77,7 +77,8 @@ in /home/WildCapybara/projects/24932529.zip. The video frames and the
 corresponding segmentation masks for each case will be stored in a [.zarr file](https://zarr.readthedocs.io/en/stable/)
 for efficient storage and retrieval, using chunking, with chunk size equal to 
 the model’s input patch size. The dataset contains 9 classes, and we will use a chunk 
-size of [512, 640]. The video frames will be normalized in [0, 1] range.
+size of [512, 640]. The video frames will be normalized based on the encoder used for 
+training.
 
 
 ### Training

@@ -20,6 +20,7 @@ from batchgeneratorsv2.transforms.spatial.spatial import SpatialTransform
 from batchgeneratorsv2.transforms.utils.compose import ComposeTransforms
 from batchgeneratorsv2.transforms.utils.pseudo2d import Convert3DTo2DTransform, Convert2DTo3DTransform
 from batchgeneratorsv2.transforms.utils.random import RandomTransform
+from segmentation_models_pytorch.encoders import get_preprocessing_fn
 
 
 def generate_crossval_split(train_identifiers, seed=12345, n_splits=5):
@@ -271,6 +272,8 @@ class SegTrainingDataset(Dataset):
         validation = False if self.section == "training" else True
         self.transformations = define_nnunet_transformations(self.transformation_args, validation)
 
+        self.preprocess_func = get_preprocessing_fn(config['model']['encoder_name'], pretrained=config['model']['encoder_weights'])
+
     def __len__(self):
         return len(self.ids)
 
@@ -434,17 +437,21 @@ class SegTrainingDataset(Dataset):
         bbox = [[int(i), int(j)] for i, j in zip(bbox_lbs, bbox_ubs)]
 
         image = crop_from_zarr(image, bbox, 0)
-        if len(image.shape) < len(self.patch_size) + 1:
-            image = np.expand_dims(image, axis=0)
+        image = np.expand_dims(image, axis=0) if len(image.shape) < len(self.patch_size) + 1 else image
         image = np.squeeze(image, axis=1) if self.patch_size[0] == 1 else image
-        image = torch.as_tensor(image).float().contiguous()
+        image = self.preprocess_func(np.moveaxis(image, 0, -1))
+        image = np.moveaxis(image, -1, 0)
 
         mask = crop_from_zarr(mask, bbox, 0)
+        mask = np.expand_dims(mask, axis=0) if len(mask.shape) < len(self.patch_size) + 1 else mask
+        mask = np.squeeze(mask, axis=1) if self.patch_size[0] == 1 else mask
+
+        image = torch.as_tensor(image).float().contiguous()
         mask = torch.as_tensor(mask).long().contiguous()
 
         image, mask = self.transform(image, mask)
 
-        image = torch.clamp(image, 0, 1)
+        # image = torch.clamp(image, 0, 1)
 
         return {'id': name, 'image': image, 'mask': mask}
 
@@ -518,10 +525,11 @@ def get_data_loaders(config, splitting, fold=None):
 
 
 class SegTestDataset(Dataset):
-    def __init__(self, data_path, data_ids, batch_size):
+    def __init__(self, data_path, data_ids, batch_size, preprocess_func):
         self.data_path = os.path.join(data_path, 'data')
         self.ids = list(data_ids)
         self.batch_size = batch_size
+        self.preprocess_func = preprocess_func
 
         # per-worker cache for open zarr arrays
         self._zarr_cache = {}
@@ -553,7 +561,12 @@ class SegTestDataset(Dataset):
     def __getitem__(self, idx):
         vid_idx, t0, t1 = self._index[idx]
         image_arr, mask_arr = self._get_arrays(vid_idx)
+
         image = torch.as_tensor(image_arr[:, t0:t1]).float().permute(1, 0, 2, 3).contiguous()
+        image = image.movedim(1, -1)
+        image = self.preprocess_func(image)  # only if it supports tensors!
+        image = image.movedim(-1, 1)
+
         mask = torch.as_tensor(mask_arr[t0:t1]).long().contiguous()
 
         return {'id': self.ids[vid_idx], 't0': t0, 't1': t1, 'image': image, 'mask': mask}

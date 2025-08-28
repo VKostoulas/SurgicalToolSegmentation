@@ -1,10 +1,9 @@
 import os
-import ast
 import glob
 import tempfile
 import argparse
 from torch.utils.data import DataLoader
-
+from segmentation_models_pytorch.encoders import get_preprocessing_fn
 from stseg.utils import get_config, check_and_convert_user_config_args
 from stseg.data_processing import create_split_files, get_data_ids, SegTestDataset
 from stseg.model import SegModel
@@ -46,7 +45,8 @@ def main():
             split_file_path = create_split_files(test_dataset_path, 'train-val-test', seed=12345)
             data_ids = get_data_ids(split_file_path)['test']
 
-        test_ds = SegTestDataset(data_path=test_dataset_path, data_ids=data_ids, batch_size=config['infer_batch_size'])
+        preprocess_func = get_preprocessing_fn(config['model']['encoder_name'], pretrained=config['model']['encoder_weights'])
+        test_ds = SegTestDataset(data_path=test_dataset_path, data_ids=data_ids, batch_size=config['infer_batch_size'], preprocess_func=preprocess_func)
         test_loader = DataLoader(test_ds, batch_size=None, shuffle=False, num_workers=config['infer_num_workers'],
                                  pin_memory=True, persistent_workers=True, prefetch_factor=1)
 
