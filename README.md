@@ -211,9 +211,9 @@ In this case, we create the training and test datasets with chunk/patch size [86
 
 ```bash
 # Create training dataset
-stseg_create_dataset /home/WildCapybara/projects/24932529.zip /home/WildCapybara/projects/datasets/STSeg 9 [512,640]
+stseg_create_dataset /home/WildCapybara/projects/24932529.zip /home/WildCapybara/projects/datasets/STSeg 9 [864,1280]
 # Create test dataset
-stseg_create_dataset /home/WildCapybara/projects/24932499.zip /home/WildCapybara/projects/datasets/STSeg_Test 9 [512,640]
+stseg_create_dataset /home/WildCapybara/projects/24932499.zip /home/WildCapybara/projects/datasets/STSeg_Test 9 [864,1280]
 ```
 
 For this example we used an NVIDIA RTX A5000 with 24GB memory, and an Intel(R) Xeon(R) 
