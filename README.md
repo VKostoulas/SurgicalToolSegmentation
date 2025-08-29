@@ -171,37 +171,74 @@ you can infer on the test partition by using as /dataset_path the path of the tr
 dataset.
 
 
-## Full Example for MICCAI Challenge
+## Full Examples for MICCAI Challenge
+
+### Example 1
+
+First, we create the training and test datasets with chunk/patch size [512,640]:
+
+```bash
+# Create training dataset
+stseg_create_dataset /home/WildCapybara/projects/24932529.zip /home/WildCapybara/projects/datasets/STSeg 9 [512,640]
+# Create test dataset
+stseg_create_dataset /home/WildCapybara/projects/24932499.zip /home/WildCapybara/projects/datasets/STSeg_Test 9 [512,640]
+```
 
 With the default configuration (based on U-Net++ and MobileNetV3) and sliding window
 overlap 0.75, by running the following commands we can achieve performance comparable 
 to the challenge leaderboard:
 
 ```bash
-# Create training dataset
-stseg_create_dataset /home/WildCapybara/projects/24932529.zip /home/WildCapybara/projects/datasets/STSeg 9 [512,640]
-# Train a model
+# Train the model
 stseg_train_model /home/WildCapybara/projects/datasets/STSeg /home/WildCapybara/projects/results/exp1 'train-val-test' 9 [512,640] -p
-# Create test dataset
-stseg_create_dataset /home/WildCapybara/projects/24932499.zip /home/WildCapybara/projects/datasets/STSeg_Test 9 [512,640]
 # Run inference on the test dataset
 stseg_infer /home/WildCapybara/projects/datasets/STSeg_Test /home/WildCapybara/projects/results/exp1 --sw_overlap 0.75 
 ```
 
 This experiment was done on a laptop with an NVIDIA GeForce RTX 3060 Laptop GPU with 
 6GB of memory and an 11th Gen Intel(R) Core(TM) i7-11800H CPU with 8 cores. Due to 
-space limitations, not even the entire training dataset was used. 28 training examples
-were used for training and 4 for validation. The original test set of 10 samples was used.
+space limitations, not even the entire training dataset was used. 28 examples were used 
+for training and 4 for validation. The original test set of 10 samples was used.
 
 **Results on the test set**:
 
-![](images/metrics.png)
+![](images/metrics1.png)
 
-**Leaderboard**:
+
+### Example 2
+
+In this case, we create the training and test datasets with chunk/patch size [864,1280]:
+
+```bash
+# Create training dataset
+stseg_create_dataset /home/WildCapybara/projects/24932529.zip /home/WildCapybara/projects/datasets/STSeg 9 [512,640]
+# Create test dataset
+stseg_create_dataset /home/WildCapybara/projects/24932499.zip /home/WildCapybara/projects/datasets/STSeg_Test 9 [512,640]
+```
+
+For this example we used an NVIDIA RTX A5000 with 24GB memory, and an Intel(R) Xeon(R) 
+Bronze 3206R CPU with 8 cores. 35 samples were used for training, 9 for validation, and 
+the original test set of 10 samples for testing. Segformer was used as the backbone 
+architecture with mit_b2 as the encoder: 
+
+```bash
+# Train the model
+stseg_train_model /home/WildCapybara/projects/datasets/STSeg /home/WildCapybara/projects/results/exp2 '5-fold' 9 [864,1280] -p -f 0 --model_arch Segformer --model_encoder_name mit_b2 --batch_size 2 --n_epochs 400 --grad_accumulate_step 2
+# Run inference on the test dataset
+stseg_infer /home/WildCapybara/projects/datasets/STSeg_Test /home/WildCapybara/projects/results/exp2 --sw_overlap 0.75 --sw_batch_size 12 
+```
+
+With this setup, we climb up to the top of the leaderboard.
+
+**Results on the test set**:
+
+![](images/metrics2.png)
+
+### Leaderboard
 
 ![](images/leaderboard.png)
 
-**Full resolution example**:
+### Full resolution example
 ![](images/data_002_18-24.png)
 
 ## How to Increase Performance
